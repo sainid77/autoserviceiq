@@ -60,11 +60,9 @@ export default function Home() {
   "w-full border border-gray-300 rounded-xl p-4 text-gray-900 placeholder-gray-500 bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
   return (
-    //<main className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-100 p-8">
     <main className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-100 p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="bg-white rounded-3xl shadow-2xl p-8">
-          //<h1 className="text-5xl font-bold text-blue-700">
           <h1 className="text-4xl md:text-5xl font-bold text-blue-700">
             Auto Service IQ
           </h1>
