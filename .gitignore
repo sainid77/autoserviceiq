@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+node_modules/
+.next/
+.env.local
+backend/venv/
+backend/google_token.json
+backend/client_secret*.json
+credentials*.json
+token*.json
+
+__pycache__/
+*.pyc
+backend/__pycache__/
