@@ -12,6 +12,9 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
+from fastapi.middleware.cors import CORSMiddleware
+import os
+
 OAUTH_STATE = {}
 
 load_dotenv()
@@ -20,7 +23,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://autoserviceiq.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
