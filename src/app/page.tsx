@@ -135,7 +135,14 @@ export default function Home() {
           </button>
 
           {responseMsg && (
-            <div className="mt-5 bg-green-100 text-green-800 p-4 rounded-xl font-medium">
+            <div
+                className={`mt-5 p-4 rounded-xl font-medium ${
+                  responseMsg.toLowerCase().includes("failed") ||
+                  responseMsg.toLowerCase().includes("wrong")
+                    ? "bg-red-100 text-red-800"
+                    : "bg-green-100 text-green-800"
+                }`}
+              >
               {responseMsg}
             </div>
           )}
