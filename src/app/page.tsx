@@ -62,14 +62,21 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-100 p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-8">
-        <div className="bg-white rounded-3xl shadow-2xl p-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-blue-700">
-            Auto Service IQ
-          </h1>
+    
+        <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8">
+          <div className="flex flex-col items-center md:items-start">
+            
+            <img
+              src="/logo.png"
+              alt="Auto Service IQ Logo"
+              className="w-72 md:w-[420px] h-auto"
+            />
 
-          <p className="text-gray-700 text-xl mt-3">
-            AI-powered vehicle service booking platform.
-          </p>
+            <p className="text-gray-700 text-lg md:text-xl mt-4 text-center md:text-left">
+              AI-powered vehicle service booking platform.
+            </p>
+
+          </div>
         </div>
 
         <div className="bg-white rounded-3xl shadow-2xl p-8">
