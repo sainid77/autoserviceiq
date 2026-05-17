@@ -44,11 +44,7 @@ export default function Home() {
           : JSON.stringify(data.detail || data)
       );
 
-      setResponseMsg(
-        typeof data.message === "string"
-          ? data.message
-          : JSON.stringify(data.message || data)
-      );
+      setResponseMsg(data.message);
 
     } catch (error) {
       setResponseMsg(
