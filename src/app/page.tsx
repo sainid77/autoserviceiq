@@ -37,11 +37,18 @@ export default function Home() {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.detail || "Booking failed.");
-      }
+      throw new Error(
+        typeof data.detail === "string"
+          ? data.detail
+          : JSON.stringify(data.detail || data)
+      );
 
-      setResponseMsg(data.message || "Booking submitted successfully.");
+      setResponseMsg(
+        typeof data.message === "string"
+          ? data.message
+          : JSON.stringify(data.message || data)
+      );
+      
     } catch (error) {
       setResponseMsg(
         error instanceof Error
