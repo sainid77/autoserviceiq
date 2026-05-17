@@ -6,21 +6,98 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.responses import RedirectResponse
 
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 from fastapi.middleware.cors import CORSMiddleware
-import os
 
-OAUTH_STATE = {}
+from pydantic import BaseModel
+from typing import List, Optional
 
-load_dotenv()
+from supabase import create_client
+
+load_dotenv(dotenv_path=".env")
+
+print("SUPABASE_URL =", os.getenv("SUPABASE_URL"))
+
+supabase = create_client(
+    os.getenv("SUPABASE_URL"),
+    os.getenv("SUPABASE_KEY")
+)
+
+
+class MechanicRegistration(BaseModel):
+    name: str
+    email: str
+    phone: Optional[str] = None
+    service_area: Optional[str] = None
+    services: List[str] = []
+
 
 app = FastAPI()
+OAUTH_STATE = {}
 
+
+
+@app.post("/mechanics/register")
+def register_mechanic(mechanic: MechanicRegistration):
+    result = supabase.table("mechanics").insert({
+        "name": mechanic.name,
+        "email": mechanic.email,
+        "phone": mechanic.phone,
+        "service_area": mechanic.service_area,
+        "services": mechanic.services,
+        "is_active": False,
+    }).execute()
+
+    mechanic_id = result.data[0]["id"]
+
+    return {
+        "success": True,
+        "mechanic_id": mechanic_id,
+        "message": "Mechanic profile created. Connect Google Calendar next."
+    }
+
+
+SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
+
+def google_client_config():
+    return {
+        "web": {
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": [os.getenv("GOOGLE_REDIRECT_URI")],
+        }
+    }
+
+
+@app.get("/mechanics/{mechanic_id}/connect-google")
+def connect_google_calendar(mechanic_id: str):
+    flow = Flow.from_client_config(
+        google_client_config(),
+        scopes=SCOPES,
+        redirect_uri=os.getenv("GOOGLE_REDIRECT_URI"),
+        autogenerate_code_verifier=True,
+    )
+
+    auth_url, state = flow.authorization_url(
+        access_type="offline",
+        include_granted_scopes="false",
+        prompt="consent",
+    )
+
+    OAUTH_STATE[state] = {
+        "mechanic_id": mechanic_id,
+        "code_verifier": flow.code_verifier,
+    }
+
+    return RedirectResponse(auth_url)
+    
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -83,11 +160,17 @@ def auth_google():
 
 
 @app.get("/auth/google/callback")
-def auth_google_callback(code: str, state: str):
-    code_verifier = OAUTH_STATE.pop(state, None)
+def google_callback(code: str, state: str):
+    saved_state = OAUTH_STATE.pop(state, None)
+
+    if not saved_state:
+        return {"error": "Invalid or expired OAuth state"}
+
+    mechanic_id = saved_state["mechanic_id"]
+    code_verifier = saved_state["code_verifier"]
 
     flow = Flow.from_client_config(
-        client_config(),
+        google_client_config(),
         scopes=SCOPES,
         redirect_uri=os.getenv("GOOGLE_REDIRECT_URI"),
         state=state,
@@ -96,10 +179,16 @@ def auth_google_callback(code: str, state: str):
 
     flow.fetch_token(code=code)
 
-    with open(TOKEN_FILE, "w") as f:
-        f.write(flow.credentials.to_json())
+    token_json = flow.credentials.to_json()
 
-    return RedirectResponse("http://localhost:3000?calendar=connected")
+    supabase.table("mechanics").update({
+        "google_token": token_json,
+        "is_active": True,
+    }).eq("id", mechanic_id).execute()
+
+    return RedirectResponse(
+        f"{os.getenv('FRONTEND_URL')}/mechanic/success"
+    )
 
 
 def calendar_service():
