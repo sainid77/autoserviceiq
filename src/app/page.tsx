@@ -76,7 +76,7 @@ export default function Home() {
               AI-powered vehicle service booking platform.
             </p>
           </div>
-        
+        </div>
 
         <div className="bg-white rounded-3xl shadow-2xl p-8">
           <h2 className="text-4xl font-bold text-gray-800 mb-8">
