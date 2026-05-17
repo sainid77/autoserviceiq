@@ -12,8 +12,6 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
-from fastapi.middleware.cors import CORSMiddleware
-
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -97,13 +95,18 @@ def connect_google_calendar(mechanic_id: str):
     }
 
     return RedirectResponse(auth_url)
-    
+
+
+origins = [
+    "http://localhost:3000",
+    "https://autoserviceiq.com",
+    "https://www.autoserviceiq.com",
+    "https://autoserviceiq.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://autoserviceiq.vercel.app",
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
