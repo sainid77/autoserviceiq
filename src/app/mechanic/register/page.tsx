@@ -94,13 +94,6 @@ export default function MechanicRegisterPage() {
             >
               Connect Google Calendar
             </a>
-
-            <a
-              href={googleConnectUrl}
-              className="inline-flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition"
-            >
-              Connect Google Calendar
-            </a>
           )}
         </div>
       </div>
