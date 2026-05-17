@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
 
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
@@ -96,6 +95,15 @@ def connect_google_calendar(mechanic_id: str):
 
     return RedirectResponse(auth_url)
 
+@app.get("/mechanics")
+def list_mechanics():
+    result = supabase.table("mechanics") \
+        .select("id,name,email,phone,service_area,services") \
+        .eq("is_active", True) \
+        .execute()
+
+    return result.data
+
 
 origins = [
     "http://localhost:3000",
@@ -113,10 +121,10 @@ app.add_middleware(
 )
 
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
-TOKEN_FILE = "google_token.json"
 
 
 class BookingRequest(BaseModel):
+    mechanic_id: str
     name: str
     email: str
     vehicle: str
@@ -140,27 +148,6 @@ def client_config():
 @app.get("/")
 def root():
     return {"message": "South Bay Mechanic backend is running"}
-
-
-@app.get("/auth/google")
-def auth_google():
-    flow = Flow.from_client_config(
-        client_config(),
-        scopes=SCOPES,
-        redirect_uri=os.getenv("GOOGLE_REDIRECT_URI"),
-        autogenerate_code_verifier=True,
-    )
-
-    auth_url, state = flow.authorization_url(
-        access_type="offline",
-        include_granted_scopes="false",
-        prompt="consent",
-    )
-
-    OAUTH_STATE[state] = flow.code_verifier
-
-    return RedirectResponse(auth_url)
-
 
 @app.get("/auth/google/callback")
 def google_callback(code: str, state: str):
@@ -193,24 +180,26 @@ def google_callback(code: str, state: str):
         f"{os.getenv('FRONTEND_URL')}/mechanic/success"
     )
 
+def calendar_service(mechanic_id: str):
+    result = supabase.table("mechanics") \
+        .select("google_token") \
+        .eq("id", mechanic_id) \
+        .single() \
+        .execute()
 
-def calendar_service():
-    if not os.path.exists(TOKEN_FILE):
-        raise RuntimeError("Google Calendar is not connected.")
+    token_json = result.data["google_token"]
 
-    creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+    creds = Credentials.from_authorized_user_info(
+        json.loads(token_json),
+        SCOPES
+    )
 
     return build("calendar", "v3", credentials=creds)
 
 
-@app.get("/calendar/status")
-def calendar_status():
-    return {"connected": os.path.exists(TOKEN_FILE)}
-
-
 @app.post("/book-service")
 def book_service(request: BookingRequest):
-    service = calendar_service()
+    service = calendar_service(request.mechanic_id)
 
     start_dt = datetime.fromisoformat(request.date)
     end_dt = start_dt + timedelta(hours=2)
