@@ -26,6 +26,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          mechanic_id: "diveysaini@gmail.com",
           name,
           email,
           vehicle,
@@ -48,7 +49,7 @@ export default function Home() {
           ? data.message
           : JSON.stringify(data.message || data)
       );
-      
+
     } catch (error) {
       setResponseMsg(
         error instanceof Error
