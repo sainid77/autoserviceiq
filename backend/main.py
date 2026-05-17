@@ -18,13 +18,36 @@ from supabase import create_client
 
 load_dotenv(dotenv_path=".env")
 
-print("SUPABASE_URL =", os.getenv("SUPABASE_URL"))
+app = FastAPI()
+OAUTH_STATE = {}
 
 supabase = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_KEY")
 )
 
+class CustomerRegistration(BaseModel):
+    name: str
+    email: str
+    phone: Optional[str] = None
+    zipcode: Optional[str] = None
+    vehicle: Optional[str] = None
+
+@app.post("/customers/register")
+def register_customer(customer: CustomerRegistration):
+    result = supabase.table("customers").insert({
+        "name": customer.name,
+        "email": customer.email,
+        "phone": customer.phone,
+        "zipcode": customer.zipcode,
+        "vehicle": customer.vehicle,
+    }).execute()
+
+    return {
+        "success": True,
+        "customer_id": result.data[0]["id"],
+        "message": "Customer registered successfully."
+    }    
 
 class MechanicRegistration(BaseModel):
     name: str
@@ -34,8 +57,6 @@ class MechanicRegistration(BaseModel):
     services: List[str] = []
 
 
-app = FastAPI()
-OAUTH_STATE = {}
 
 
 
