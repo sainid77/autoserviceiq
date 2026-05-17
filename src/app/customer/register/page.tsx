@@ -78,7 +78,7 @@ export default function CustomerRegisterPage() {
 
         <button
           onClick={registerCustomer}
-          className="bg-blue-600 text-white px-8 py-4 rounded-xl"
+          className="bg-blue-600 text-black px-8 py-4 rounded-xl"
         >
           Register Customer
         </button>
