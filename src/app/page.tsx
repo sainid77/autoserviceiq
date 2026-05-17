@@ -26,7 +26,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mechanic_id: "diveysaini@gmail.com",
+          mechanic_id: "a66ec3d6-9a71-4c75-8583-b25538989b76",
           name,
           email,
           vehicle,
